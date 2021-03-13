@@ -10,6 +10,8 @@ import requests #requests whatever
 import shutil #2save pics localy
 from random import randint #4random
 
+from os import remove#load just what i need
+
 TOKEN = ''
 
 response = requests.get("https://flagcdn.com/en/codes.json")
@@ -24,7 +26,8 @@ def load_Image(url):
 		shutil.copyfileobj(response.raw, out_file)
 	del response
 
-
+def remove_Image():
+	remove('img.png')
 
 
 
@@ -46,6 +49,7 @@ async def play(ctx):
 	answer = countries[index]
 	load_Image('https://flagcdn.com/w640/' + index + '.png')
 	await ctx.send(file=discord.File('img.png'))
+	remove_Image()
 
 
 
