@@ -39,6 +39,10 @@ answer = ""
 
 bot = commands.Bot(command_prefix='/')
 
+
+
+#shouldnt send another pic while game runs
+
 @bot.command(pass_context=True)
 async def play(ctx):
 
@@ -51,15 +55,22 @@ async def play(ctx):
 	await ctx.send(file=discord.File('img.png'))
 	remove_Image()
 
+	print(answer) ###############################################
+
 
 
 @bot.event
 async def on_message(message):
 	if message.author.id == bot.user.id: #he shouldn reply himself
 		return
+
+	global game_status #make it global 2 make it usable in async
+	global answer
+
 	print(bot)
 	print(message.author)
-	global game_status #make it global 2 make it usable in async
+	print(answer)
+
 	if game_status:
 		if message.content == answer:
 			await message.channel.send("Yup")
