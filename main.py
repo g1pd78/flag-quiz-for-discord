@@ -32,16 +32,34 @@ def remove_Image():
 
 
 
-
 game_status = False
-answer = ""
-
+count = 0
 
 bot = commands.Bot(command_prefix='/')
 
 
+#make prm
 
 
+@bot.command(pass_context=True)
+async def play(ctx, prm):
+
+	#index = indexs[randint(0, countries_count - 1)]
+	global game_status 
+	global count
+	count = int(prm)
+	game_status = True
+	print('ya')
+	#on_message(ctx)
+	#on_message(ctx)
+	#print(game_status)
+	#load_Image('https://flagcdn.com/w640/' + index + '.png')
+	#await ctx.send(file=discord.File('img.png'))
+	#remove_Image()
+
+	#print(answer) ###############################################
+
+'''
 
 @bot.command(pass_context=True)
 async def play(ctx):
@@ -56,34 +74,76 @@ async def play(ctx):
 	remove_Image()
 
 	print(answer) ###############################################
+'''
+
+class image(object):
+
+	def __init__(self, index, answer, is_answered):
+		self.index = index
+		self.answer = answer
+		self.is_answered = is_answered
+
+im = image('a', 'a', True)
 
 
+async def send_im(ctx):
+	await ctx.channel.send('asd')
 
 @bot.event
 async def on_message(message):
+
+	
 	if message.author.id == bot.user.id: #he shouldn reply himself
 		return
 
 	global game_status #make it global 2 make it usable in async
-	global answer
+	global count
 
 	if message.content == '/play' and game_status:
 		print('Trying to play 2gamez in one')
 		return
 
+	await bot.process_commands(message)#after exeptions
+
+
+	def game():
+		im.index = indexs[randint(0, countries_count - 1)]
+		im.answer = countries[im.index]
+		load_Image('https://flagcdn.com/w640/' + im.index + '.png')
+		im.is_answered = False
+		
+		
+
+		print(im.answer) ###############################################
+
+
+	'''
 	print(bot)
 	print(message.author)
-	print(answer)
+	print(im.answer)
+	print(game_status)
+	print(count)
+	print(im.is_answered)
+	'''
+
 
 	if game_status:
-		if message.content == answer:
-			await message.channel.send("Yup")
-			game_status = False
-		else:
-			await message.channel.send("Nope")
+		if not im.is_answered:
+			if message.content == im.answer:
+				await message.channel.send("Yup, " + str(message.author).split('#')[0])
+				im.is_answered = True
+				count-=1
+			else:
+				await message.channel.send("Nope")
+		if(im.is_answered and count):
+			game()
+			await message.channel.send(file=discord.File('img.png'))
+		if not count:
+			await message.channel.send("Game Over")
+		
 
 
-	await bot.process_commands(message)
+	
 
 
 	
