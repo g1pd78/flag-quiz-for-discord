@@ -41,7 +41,7 @@ bot = commands.Bot(command_prefix='/')
 
 
 
-#shouldnt send another pic while game runs
+
 
 @bot.command(pass_context=True)
 async def play(ctx):
@@ -66,6 +66,10 @@ async def on_message(message):
 
 	global game_status #make it global 2 make it usable in async
 	global answer
+
+	if message.content == '/play' and game_status:
+		print('Trying to play 2gamez in one')
+		return
 
 	print(bot)
 	print(message.author)
