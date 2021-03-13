@@ -38,43 +38,19 @@ count = 0
 bot = commands.Bot(command_prefix='/')
 
 
-#make prm
 
 
 @bot.command(pass_context=True)
 async def play(ctx, prm):
 
-	#index = indexs[randint(0, countries_count - 1)]
 	global game_status 
 	global count
 	count = int(prm)
 	game_status = True
 	print('ya')
-	#on_message(ctx)
-	#on_message(ctx)
-	#print(game_status)
-	#load_Image('https://flagcdn.com/w640/' + index + '.png')
-	#await ctx.send(file=discord.File('img.png'))
-	#remove_Image()
 
-	#print(answer) ###############################################
 
-'''
 
-@bot.command(pass_context=True)
-async def play(ctx):
-
-	index = indexs[randint(0, countries_count - 1)]
-	global answer
-	global game_status 
-	game_status = True
-	answer = countries[index]
-	load_Image('https://flagcdn.com/w640/' + index + '.png')
-	await ctx.send(file=discord.File('img.png'))
-	remove_Image()
-
-	print(answer) ###############################################
-'''
 
 class image(object):
 
@@ -138,6 +114,7 @@ async def on_message(message):
 		if(im.is_answered and count):
 			game()
 			await message.channel.send(file=discord.File('img.png'))
+			remove_Image()
 		if not count:
 			await message.channel.send("Game Over")
 		
