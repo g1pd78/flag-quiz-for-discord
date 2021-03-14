@@ -12,12 +12,18 @@ from random import randint #4random
 
 from os import remove#load just what i need
 
+import sqlite3 #4sqlite
+
 TOKEN = ''
 
 response = requests.get("https://flagcdn.com/en/codes.json")
 countries = json.loads(response.text)
 indexs = list(countries.keys())
 countries_count = len(indexs)
+game_status = False
+count = 0
+
+
 
 def load_Image(url):
 
@@ -32,13 +38,26 @@ def remove_Image():
 
 
 
-game_status = False
-count = 0
-
-bot = commands.Bot(command_prefix='/')
 
 
+bot = commands.Bot(command_prefix = '/', help_command = None)
 
+@bot.command(pass_context = True)
+async def help(ctx, *args):
+	st = discord.Embed(title = 'Можем сыграть',
+	 description = 
+	 '''
+	 	Присутствуют следующие режимчики:
+
+	 	1)квиз на 5 вопросиков
+	 	2)квиз на 10 вопросиков 
+
+	 	Запускаемся, значится, командой - /play
+
+	 	На вопросик дается 5 попыточек
+	 ''',
+	 color = 0xFF5733)
+	await ctx.send(embed=st)
 
 @bot.command(pass_context=True)
 async def play(ctx, prm):
@@ -47,20 +66,20 @@ async def play(ctx, prm):
 	global count
 	count = int(prm)
 	game_status = True
-	print('ya')
 
 
 
 
 class image(object):
 
-	def __init__(self, index, answer, is_answered):
+	def __init__(self, index, answer, is_answered, count_of_wrong_answers):
 		self.index = index
 		self.answer = answer
 		self.is_answered = is_answered
+		self.count_of_wrong_answers = count_of_wrong_answers
 
-im = image('a', 'a', True)
-
+im = image('a', 'a', True, 0)
+players_list = {}
 
 async def send_im(ctx):
 	await ctx.channel.send('asd')
@@ -74,7 +93,7 @@ async def on_message(message):
 
 	global game_status #make it global 2 make it usable in async
 	global count
-
+	global players_list
 	if message.content == '/play' and game_status:
 		print('Trying to play 2gamez in one')
 		return
@@ -87,7 +106,7 @@ async def on_message(message):
 		im.answer = countries[im.index]
 		load_Image('https://flagcdn.com/w640/' + im.index + '.png')
 		im.is_answered = False
-		
+		im.count_of_wrong_answers = 0
 		
 
 		print(im.answer) ###############################################
@@ -104,19 +123,47 @@ async def on_message(message):
 
 
 	if game_status:
+
 		if not im.is_answered:
 			if message.content == im.answer:
-				await message.channel.send("Yup, " + str(message.author).split('#')[0])
+				message_author = str(message.author)
+
+				if message_author in players_list:
+					players_list[message_author] += 1
+				else:
+					players_list.update({message_author:1})
+
+
+				await message.channel.send("Yup, " + message_author.split('#')[0] + ', excelent!')
 				im.is_answered = True
 				count-=1
 			else:
 				await message.channel.send("Nope")
-		if(im.is_answered and count):
-			game()
+				im.count_of_wrong_answers += 1
+				if im.count_of_wrong_answers == 5: #attempts border
+					im.is_answered = True
+					count -= 1
+					await message.channel.send("Too many attempts for one question!")
+
+		if im.is_answered and count:
+			game()#reload image information
 			await message.channel.send(file=discord.File('img.png'))
 			remove_Image()
+
 		if not count:
-			await message.channel.send("Game Over")
+			players_list = dict(sorted(players_list.items(), key = lambda item: item[1], reverse = False))
+			await message.channel.send("Game Over!")
+			winner_mes = discord.Embed(color = 0xFF5733, description = list(players_list.keys())[0].split('#')[0] + ' is a winner!')
+			await message.channel.send(embed = winner_mes)#print a winner
+			#write result into sql dbase
+			connect = sqlite3.connect('players.sql')
+			cur = connect.cursor()
+			print(list(players_list.values())[0])
+			cur.execute("INSERT INTO players(id, score) values(:id, :score);", (list(players_list.keys()) + list(players_list.values())))
+			connect.commit()
+
+			#i shoulda review tie variants
+			players_list.clear()#remove players from dict
 		
 
 
@@ -127,3 +174,10 @@ async def on_message(message):
 bot.run(TOKEN)
 
 
+#add exeptions like count < 0 and add sql or json table with players 
+#create own table 4every chat or create prm with id of the chat
+#insert into tbl1 values('hello!',10);
+
+
+
+#lambda functions
