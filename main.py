@@ -49,10 +49,10 @@ async def help(ctx, *args):
 	 '''
 	 	Присутствуют следующие режимчики:
 
-	 	1)квиз на 5 вопросиков
-	 	2)квиз на 10 вопросиков 
-
-	 	Запускаемся, значится, командой - /play
+	 	1)квиз на 5 вопросиков - short
+	 	2)квиз на 10 вопросиков - long
+	 	3)квиз на желаемое число вопросов - custom
+	 	Запускаемся, значится, командой - /play %вариант игры%
 
 	 	На вопросик дается 5 попыточек
 	 ''',
@@ -60,16 +60,31 @@ async def help(ctx, *args):
 	await ctx.send(embed=st)
 
 @bot.command(pass_context=True)
-async def play(ctx, prm):
+async def play(ctx, prm, *args):
 
 	global game_status 
 	global count
-	count = int(prm)
-	game_status = True
+	#param = int(prm)
+
+	#print(args)
+	###################### 4 testing made it 1
+
+	if prm == 'short':
+		count = 1
+		game_status = True
+	elif prm == 'long':
+		count == 10
+		game_status = True
+	elif prm == 'custom':
+		count = int(args[0])
+		game_status = True
+	else:
+		await ctx.send('You shoulda read /help info first!')
 
 
 
 
+#make class for easier usage 
 class image(object):
 
 	def __init__(self, index, answer, is_answered, count_of_wrong_answers):
@@ -81,8 +96,7 @@ class image(object):
 im = image('a', 'a', True, 0)
 players_list = {}
 
-async def send_im(ctx):
-	await ctx.channel.send('asd')
+
 
 @bot.event
 async def on_message(message):
@@ -94,14 +108,19 @@ async def on_message(message):
 	global game_status #make it global 2 make it usable in async
 	global count
 	global players_list
-	if message.content == '/play' and game_status:
-		print('Trying to play 2gamez in one')
+
+	if message.content == '/play' and game_status:#/play control
+		await message.channel.send('Nah, you are already playing!')
+		return
+
+	if message.content == '/help' and game_status:#/help control
+		await message.channel.send('If you figured how to start - you can finish a game first, just try to answer!')
 		return
 
 	await bot.process_commands(message)#after exeptions
 
 
-	def game():
+	def game():#refreshing info
 		im.index = indexs[randint(0, countries_count - 1)]
 		im.answer = countries[im.index]
 		load_Image('https://flagcdn.com/w640/' + im.index + '.png')
@@ -151,18 +170,27 @@ async def on_message(message):
 			remove_Image()
 
 		if not count:
-			players_list = dict(sorted(players_list.items(), key = lambda item: item[1], reverse = False))
+			players_list = dict(sorted(players_list.items(), key = lambda item: item[1], reverse = False))#sort by points
 			await message.channel.send("Game Over!")
-			winner_mes = discord.Embed(color = 0xFF5733, description = list(players_list.keys())[0].split('#')[0] + ' is a winner!')
+
+			players_list_keys = list(players_list.keys())
+			players_list_values = list(players_list.values())
+
+			if players_list_values[0] == players_list_values[1]:#check it with someone else or create another account //later
+				await message.channel.send("It isnt the END! It is a tie! One more flag!")
+				count += 1 
+				game_status = True
+
+			winner_mes = discord.Embed(color = 0xFF5733, description = players_list_keys[0].split('#')[0] + ' is a winner!')
 			await message.channel.send(embed = winner_mes)#print a winner
 			#write result into sql dbase
 			connect = sqlite3.connect('players.sql')
 			cur = connect.cursor()
-			print(list(players_list.values())[0])
-			cur.execute("INSERT INTO players(id, score) values(:id, :score);", (list(players_list.keys()) + list(players_list.values())))
+			print(players_list_values[0])
+			cur.execute("INSERT INTO players(id, score) values(:id, :score);", (players_list_keys + players_list_values))
 			connect.commit()
 
-			#i shoulda review tie variants
+			#i shoulda review tie variants ----- still player who isnt a potential winnner can answer!!!!!!!!!
 			players_list.clear()#remove players from dict
 		
 
