@@ -21,7 +21,7 @@ def point_calculation(message_author, show_variants):
 		players_list.update({message_author:points_per_question})
 
 
-def game_finnished(message):
+async def game_finnished(message):
 	global players_list
 	players_list = dict(sorted(players_list.items(), key = lambda item: item[1], reverse = False))#sort by points
 	players_list_keys = list(players_list.keys())
@@ -36,7 +36,7 @@ def game_finnished(message):
 		connect.commit()
 		players_list.clear()#remove players from dict
 		winner_mes = em(color = 0xFF5733, description = players_list_keys[0].split('#')[0] + ' is a winner!')
-		return message.channel.send(embed = winner_mes)#print a winner
+		return await message.channel.send(embed = winner_mes)#print a winner
 		#i shoulda review tie variants ----- still player who isnt a potential winnner can answer!!!!!!!!!
 		
 

@@ -4,6 +4,7 @@ import requests #requests whatever
 from random import randint #4random
 import shutil #2save pics localy
 from os import remove#load just what i need
+import discord
 
 response = requests.get("https://flagcdn.com/en/codes.json")
 countries = json.loads(response.text)
@@ -21,6 +22,7 @@ def load_Image(url):
 
 def remove_Image():
 	remove('img.png')
+
 
 def count_calculation(msg: list) -> int:
 	count = 0
@@ -49,7 +51,7 @@ def count_calculation(msg: list) -> int:
 
 	return count
 
-def refresh_Image_info(im):#refreshing info
+async def refresh_and_send_image(im, message):#refreshing info
 	im.index = indexs[randint(0, countries_count - 1)]
 	im.answer = countries[im.index]
 	load_Image('https://flagcdn.com/w640/' + im.index + '.png')
@@ -57,10 +59,13 @@ def refresh_Image_info(im):#refreshing info
 	im.count_of_wrong_answers = 4
 
 	print(im.answer) ###############################################
+
+
+	return await message.channel.send(file=discord.File('img.png')), remove_Image()
 	
-def print_variants():#rename
+async def print_variants(message, answer):#rename
 	variant_list = []
-	variant_list.append(im.answer)
+	variant_list.append(answer)
 	variants_count = 1
 	while variants_count != 4:
 		current_variant = countries[indexs[randint(0, countries_count - 1)]]
@@ -68,7 +73,10 @@ def print_variants():#rename
 			variant_list.append(current_variant)
 			variants_count += 1
 	
-	return variant_list
+	for i in range(4):
+		print_cur_var = discord.Embed(color = discord.Colour.random(), description = variant_list[i])
+		await message.channel.send(embed = print_cur_var)
+
 
 
 
