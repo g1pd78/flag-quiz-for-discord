@@ -122,6 +122,7 @@ async def play_command(message, client):
 	#global show_variants
 	count = count_calculation(message.content.split(' '))
 	game_status = True
+
 	while count:
 		#reaction = await self.wait_for('reaction')
 		#print(reaction)
@@ -150,7 +151,7 @@ async def play_command(message, client):
 					if guess and guess.content == im.answer:
 						await message.channel.send('Yup')
 						im.count_of_wrong_answers = 0#to end game
-						point_calculation(str(message.author), show_variants)
+						point_calculation(str(guess.author), show_variants)
 					else:
 						await message.channel.send('Nope')
 						im.count_of_wrong_answers -= 1
@@ -167,9 +168,16 @@ async def play_command(message, client):
 			except asyncio.TimeoutError:
 				im.count_of_wrong_answers = 0
 				await message.channel.send('Sorry, you took too long it was {}.'.format(im.answer))
+
 		count -= 1
 
+		#tie
+		if not count and await tie_checker(message):
+			count += 1
+			print('tie!')
+
 	await game_finnished(message)
+
 
 
 print('play module ready!')
