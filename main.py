@@ -15,7 +15,7 @@ TOKEN = ''
 
 
 
-show_variants = True
+
 game_status = False
 
 
@@ -47,20 +47,21 @@ class myBot(discord.Client):
 		global game_status
 
 
-
 		if message.content.startswith('/help') and not game_status:
 			await help_command(message)
 			#help.py file
 
 
+		if message.content.startswith('/variants') and not game_status:
+			await change_var_param(message)
+			
+
 
 
 		if message.content.startswith('/play') and not game_status:
 
-			await play_command(message, show_variants, self)
-
+			await play_command(message, self)
 			await message.channel.send("Game Over!")
-						await game_finnished(message)
 			game_status = False
 
 			
@@ -90,3 +91,7 @@ class myBot(discord.Client):
 
 bot = myBot()
 bot.run(TOKEN)
+
+#доделать /варианты и ничью, а потом к реакциям!
+#pip3 freeze | grep discord.py > requirements.txt 
+#is_system()
