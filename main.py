@@ -11,10 +11,6 @@ TOKEN = ''
 
 
 
-#make class for easier Image usage 
-
-
-
 
 game_status = False
 
@@ -54,37 +50,32 @@ class myBot(discord.Client):
 
 		if message.content.startswith('/variants') and not game_status:
 			await change_var_param(message)
-			
 
+
+
+		if message.content.startswith('/score') and not game_status:
+			await show_score(message)
 
 
 		if message.content.startswith('/play') and not game_status:
-
+			game_status = True
 			await play_command(message, self)
 			await message.channel.send("Game Over!")
 			game_status = False
 
-			
-			'''
-			#tie variant
-				if players_list_values[0] == players_list_values[1]:#check it with someone else or create another account //later
-					await message.channel.send("It isnt the END! It is a tie! One more flag!")
-					count += 1 
-					game_status = True
-					return
-				'''
-
-			#print(players_list_values)
 
 
 
 '''
 	async def on_reaction_add(client, mes, author):
-		print(author.id)
+		#print(client.asd)
+		check_reaction(mes.message.id)
+		#print(mes.message.id)
+		#print(author.asdasd)
 		#print(author.name)
 		#print(author)
 		#print(m.emoji)
-		'''
+'''
 
 
 		#!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -93,5 +84,5 @@ bot = myBot()
 bot.run(TOKEN)
 
 #доделать /варианты и ничью, а потом к реакциям!
-#pip3 freeze | grep discord.py > requirements.txt 
 #is_system()
+#/top

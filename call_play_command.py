@@ -99,9 +99,26 @@ async def refresh_and_send_image(message):#refreshing info
 	print(im.answer) ###############################################
 
 
-	return await message.channel.send(file=discord.File('img.png')), remove_Image()
+	msg = await message.channel.send(file=discord.File('img.png'))
+
+	remove_Image()
 	
+	'''
+async def reaction_check(client):
+	def check(reaction, user):
+		print('asd')
+		return str(reaction.emoji) == '✅'
+
+	try: 	
+		reaction, user = await client.wait_for('reaction_add', check = check, timeout=60.0)
+	except asyncio.TimeoutError:
+		print('nah')
+		'''
+msg_id = []
 async def print_variants(message):#rename
+
+	global msg_id
+
 	#global show_variants
 	variant_list = []
 	variant_list.append(im.answer)
@@ -114,7 +131,11 @@ async def print_variants(message):#rename
 	
 	for i in range(4):
 		print_cur_var = discord.Embed(color = discord.Colour.random(), description = variant_list[i])
-		await message.channel.send(embed = print_cur_var)
+		msg = await message.channel.send(embed = print_cur_var)
+		msg_id.append(msg.id)
+	print(msg_id)
+		#await reaction_check(client)
+		
 
 
 
@@ -138,6 +159,7 @@ async def play_command(message, client):
 
 			try:
 				guess = await client.wait_for('message', check = lambda message: message.author.id != client.user.id, timeout = 10.0)
+
 				#чтобы не отвечал на вэйтфоры сам себе
 
 
@@ -151,9 +173,10 @@ async def play_command(message, client):
 					if guess and guess.content == im.answer:
 						await message.channel.send('Yup')
 						im.count_of_wrong_answers = 0#to end game
-						point_calculation(str(guess.author), show_variants)
+						point_calculation(str(guess.author), show_variants, True)
 					else:
 						await message.channel.send('Nope')
+						point_calculation(str(guess.author), show_variants, False)
 						im.count_of_wrong_answers -= 1
 						if im.count_of_wrong_answers == 0:
 							await message.channel.send('Sorry, your attempts over! It was {}.'.format(im.answer))

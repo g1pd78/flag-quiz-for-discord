@@ -24,6 +24,9 @@ async def help_command(message):
 
 
 	 		Обкашлять вопросик дается 5 попыточек и 10 секунд
+
+	 		$/score - показать баллы
+
 	 		''',
 	 		color = 0xFF5733)
 	return await message.channel.send(embed = st)
