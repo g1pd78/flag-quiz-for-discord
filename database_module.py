@@ -5,7 +5,6 @@ from discord import Embed as em
 
 
 
-
 players_list = {}
 
 

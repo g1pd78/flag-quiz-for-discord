@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import json #load countries indexes
 import requests #requests whatever
-from random import randint #4random
-import shutil #2save pics localy
-from os import remove#load just what i need
+from random import randint #4random    $default python module
+from shutil import copyfileobj #2save pics localy $ default python module
+from os import remove#load just what i need    $ default python module
 import discord
-import asyncio
+import asyncio #$default python module
 from  database_module import *
+
 
 
 
@@ -14,6 +15,28 @@ response = requests.get("https://flagcdn.com/en/codes.json")
 countries = json.loads(response.text)
 indexs = list(countries.keys())
 countries_count = len(indexs)
+
+
+
+
+show_variants = True
+
+
+
+
+async def change_var_param(message):
+	global show_variants
+	msg = message.content.split(' ')
+	if len(msg) >= 2:
+		if msg[1].upper() == 'ON':
+			show_variants = True
+
+			await message.add_reaction('✅')
+		elif msg[1].upper() == 'OFF':
+			show_variants = False
+			await message.add_reaction('✅')
+		else:
+			await message.add_reaction('❌')
 
 
 class image(object):
@@ -31,7 +54,7 @@ def load_Image(url):
 
 	response = requests.get(url, stream=True)
 	with open('img.png', 'wb') as out_file:
-		shutil.copyfileobj(response.raw, out_file)
+		copyfileobj(response.raw, out_file)
 	del response
 
 
@@ -79,6 +102,7 @@ async def refresh_and_send_image(message):#refreshing info
 	return await message.channel.send(file=discord.File('img.png')), remove_Image()
 	
 async def print_variants(message):#rename
+	#global show_variants
 	variant_list = []
 	variant_list.append(im.answer)
 	variants_count = 1
@@ -94,7 +118,8 @@ async def print_variants(message):#rename
 
 
 
-async def play_command(message, show_variants, client):
+async def play_command(message, client):
+	#global show_variants
 	count = count_calculation(message.content.split(' '))
 	game_status = True
 	while count:
@@ -143,6 +168,8 @@ async def play_command(message, show_variants, client):
 				im.count_of_wrong_answers = 0
 				await message.channel.send('Sorry, you took too long it was {}.'.format(im.answer))
 		count -= 1
+
+	await game_finnished(message)
 
 
 print('play module ready!')
