@@ -10,9 +10,10 @@ import discord #for my bot
 TOKEN = ''
 
 
-
-
-game_status = False
+#servers = {}
+#servers[''] = {}
+#game_statuses = {[]	, ''}
+servers = {}
 
 
 
@@ -39,32 +40,39 @@ class myBot(discord.Client):
 
 		#here i can place my commands / shoulda check em with /stratswith()
 
+		global servers
 
-		global game_status
 
 
-		if message.content.startswith('/help') and not game_status:
+
+		guild = message.guild.id
+		if not guild in servers:
+			servers[guild] = ''
+			init_variant_and_img_prm(guild)
+
+		
+		if message.content.startswith('/help') and not servers[guild]:
 			await help_command(message)
 			#help.py file
 
 
-		if message.content.startswith('/variants') and not game_status:
-			await change_var_param(message)
+		if message.content.startswith('/variants') and not servers[guild]:
+			await change_var_param(message, guild)
 
 
 
-		if message.content.startswith('/score') and not game_status:
+		if message.content.startswith('/score') and not servers[guild]:
 			await show_score(message)
 
 
-		if message.content.startswith('/play') and not game_status:
-			game_status = True
-			await play_command(message, self)
+		if message.content.startswith('/play') and not servers[guild]:
+			servers[guild] = True
+			await play_command(message, self, guild)
 			await message.channel.send("Game Over!")
-			game_status = False
+			servers[guild] = False
 
 
-
+#ответы привязать к сервер айди
 
 '''
 	async def on_reaction_add(client, mes, author):

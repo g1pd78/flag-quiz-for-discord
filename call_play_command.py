@@ -19,25 +19,8 @@ countries_count = len(indexs)
 
 
 
-show_variants = True
-
-
-
-
-async def change_var_param(message):
-	global show_variants
-	msg = message.content.split(' ')
-	if len(msg) >= 2:
-		if msg[1].upper() == 'ON':
-			show_variants = True
-
-			await message.add_reaction('✅')
-		elif msg[1].upper() == 'OFF':
-			show_variants = False
-			await message.add_reaction('✅')
-		else:
-			await message.add_reaction('❌')
-
+show_variants = {}
+images = {}
 
 class image(object):
 
@@ -46,7 +29,29 @@ class image(object):
 		self.answer = answer
 		self.count_of_wrong_answers = count_of_wrong_answers
 
-im = image('', '', 0)
+
+#im = image('', '', 0)
+
+def init_variant_and_img_prm(guild):
+	show_variants[guild] = False
+	images[guild] = image('', '', 0)
+
+async def change_var_param(message, guild):
+	global show_variants
+	msg = message.content.split(' ')
+	if len(msg) >= 2:
+		if msg[1].upper() == 'ON':
+			show_variants[guild] = True
+
+			await message.add_reaction('✅')
+		elif msg[1].upper() == 'OFF':
+			show_variants[guild] = False
+			await message.add_reaction('✅')
+		else:
+			await message.add_reaction('❌')
+
+
+
 
 
 
@@ -90,13 +95,14 @@ def count_calculation(msg: list) -> int:
 	return count
 
 async def refresh_and_send_image(message):#refreshing info
-	im.index = indexs[randint(0, countries_count - 1)]
-	im.answer = countries[im.index]
-	load_Image('https://flagcdn.com/w640/' + im.index + '.png')
-	im.is_answered = False
-	im.count_of_wrong_answers = 4
+	guild = message.guild.id
+	images[guild].index = indexs[randint(0, countries_count - 1)]
+	images[guild].answer = countries[images[guild].index]
+	load_Image('https://flagcdn.com/w640/' + images[guild].index + '.png')
+	images[guild].is_answered = False
+	images[guild].count_of_wrong_answers = 4
 
-	print(im.answer) ###############################################
+	print(images[guild].answer) ###############################################
 
 
 	msg = await message.channel.send(file=discord.File('img.png'))
@@ -114,14 +120,14 @@ async def reaction_check(client):
 	except asyncio.TimeoutError:
 		print('nah')
 		'''
-msg_id = []
-async def print_variants(message):#rename
+#msg_id = []###################################################################
+async def print_variants(message):
 
-	global msg_id
+	#global msg_id
 
 	#global show_variants
 	variant_list = []
-	variant_list.append(im.answer)
+	variant_list.append(images[message.guild.id].answer)
 	variants_count = 1
 	while variants_count != 4:
 		current_variant = countries[indexs[randint(0, countries_count - 1)]]
@@ -132,14 +138,14 @@ async def print_variants(message):#rename
 	for i in range(4):
 		print_cur_var = discord.Embed(color = discord.Colour.random(), description = variant_list[i])
 		msg = await message.channel.send(embed = print_cur_var)
-		msg_id.append(msg.id)
-	print(msg_id)
+		#msg_id.append(msg.id)
+	#print(msg_id)
 		#await reaction_check(client)
 		
 
 
 
-async def play_command(message, client):
+async def play_command(message, client, guild):
 	#global show_variants
 	count = count_calculation(message.content.split(' '))
 	game_status = True
@@ -150,16 +156,19 @@ async def play_command(message, client):
 		await refresh_and_send_image(message)#reload image information and send it/ then remove
 
 
-		if show_variants:
+		if show_variants[guild]:
 			await print_variants(message)
 
 
-		while im.count_of_wrong_answers:
+		def check(mes: discord.Message):
+			return message.channel == mes.channel and mes.author.id != client.user.id
+
+		while images[guild].count_of_wrong_answers:
 
 
 			try:
-				guess = await client.wait_for('message', check = lambda message: message.author.id != client.user.id, timeout = 10.0)
-
+				guess = await client.wait_for('message', check = check)#, timeout = 10.0)
+				print(guess.author)
 				#чтобы не отвечал на вэйтфоры сам себе
 
 
@@ -170,15 +179,15 @@ async def play_command(message, client):
 
 
 					#print(guess)
-					if guess and guess.content == im.answer:
+					if guess and guess.content == images[guild].answer:
 						await message.channel.send('Yup')
-						im.count_of_wrong_answers = 0#to end game
-						point_calculation(str(guess.author), show_variants, True)
+						images[guild].count_of_wrong_answers = 0#to end game
+						point_calculation(str(guess.author), show_variants[guild], True)
 					else:
 						await message.channel.send('Nope')
-						point_calculation(str(guess.author), show_variants, False)
-						im.count_of_wrong_answers -= 1
-						if im.count_of_wrong_answers == 0:
+						point_calculation(str(guess.author), show_variants[guild], False)
+						images[guild].count_of_wrong_answers -= 1
+						if images[guild].count_of_wrong_answers == 0:
 							await message.channel.send('Sorry, your attempts over! It was {}.'.format(im.answer))
 
 
@@ -189,8 +198,8 @@ async def play_command(message, client):
 
 
 			except asyncio.TimeoutError:
-				im.count_of_wrong_answers = 0
-				await message.channel.send('Sorry, you took too long it was {}.'.format(im.answer))
+				images[guild].count_of_wrong_answers = 0
+				await message.channel.send('Sorry, you took too long it was {}.'.format(images[guild].answer))
 
 		count -= 1
 
